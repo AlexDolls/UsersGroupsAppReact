@@ -170,7 +170,7 @@ def get_user(request, user_id: int):
 @api_view(['GET'])
 def create_user(request, username: int, password: str):
     email = request.GET.get("email", "sample@mail.com")
-    group = request.GET.get("group", "null")
+    group = request.GET.get("group_id", "null")
     user = UserActions.create_user(username=username, password=password, email=email, group=group)
     return Response(user)
 
@@ -185,7 +185,10 @@ def change_password(request, user_id: int, new_password: str):
     return Response(user_change_password)
 
 @api_view(['GET'])
-def change_username(request, user_id: int, new_username: str):
+def change_username(request, user_id: int):
+    new_username = request.GET.get("username", "")
+    if not new_username:
+        return Response({"error":"No username was given!"})
     user_change_username = UserActions.change_username(username=new_username, user_id=user_id)
     return Response(user_change_username)
 
@@ -213,9 +216,7 @@ def get_group(request, group_id: int):
     return Response(group_json_info)
 
 @api_view(['GET'])
-def create_group(request, group_name: str):
-    desc = request.GET.get("desc", "")
-    print(desc)
+def create_group(request, group_name: str, desc: str):
     group = GroupActions.create_group(name=group_name, desc=desc)
     return Response(group)
 

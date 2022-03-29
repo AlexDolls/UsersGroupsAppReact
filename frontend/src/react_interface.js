@@ -1,15 +1,14 @@
 import React from 'react';
+import UsersService, {GroupsService}  from  './UsersService';
+
 
 
 const default_user_password = "12345678"
 
 console.log(React.version)
 
-const host = "http://127.0.0.1:8000/userslist/"
-const users_api_url = host + "api/users/"
-const groups_api_url = host + "api/groups/"
-
-const user_remove_api_url = host + "api/users/"
+const usersService  =  new UsersService();
+const groupsService = new GroupsService();
 
 class Layout extends React.Component {
  	constructor(props){
@@ -94,28 +93,22 @@ class UsersTable extends React.Component {
 	}
 
 	get_users(){
-        fetch(users_api_url)
-            .then(res => res.json())
-		.then(
-			(result)=> {
-				this.setState({
-					users:result,
-					user_id_edit: "none",
-				});
-			}
-		)
+	usersService.getUsers()
+		.then((result) => {
+			this.setState({
+                                        users:result.data,
+                                        user_id_edit: "none",
+                                });
+		});
         }
 
 	get_groups(){
-        fetch(groups_api_url)
-            .then(res => res.json())
-                .then(
-                        (result)=> {
-                                this.setState({
-					groups: result,
-				});
-                        }
-                )
+	groupsService.getGroups()
+		.then((result) => {
+			this.setState({
+                                        groups: result.data,
+                                });
+		});
         }
 
 	
@@ -312,39 +305,35 @@ class UsersTable extends React.Component {
 	}
 
 	handleClickDelete(e) {
-		var remove_url = user_remove_api_url + e.target.value + "/remove/"
-		fetch(remove_url)
-			.then(res => res.json())
-			.then(
-				(result) => {
-					this.get_users();
-					console.log(result.detail)
-				}
-			);
+		usersService.removeUser(e.target.value)
+			.then((result) => {
+				this.get_users();
+                                console.log(result.data.detail)
+			});
 	}
 
 	handleClickEdit(e) {
 		if (("" + e.target.value) === "" + (this.state.user_id_edit)){
-			var edit_username_api_url = user_remove_api_url + e.target.value + "/change/username/"
-			var new_username = document.querySelector("#input" + e.target.value).value
+			const new_username = document.querySelector("#input" + e.target.value).value
 			const group_select_dom = document.querySelector('#editselectgroup' + e.target.value);
-			console.log(e.target.value)
-			var group_id = group_select_dom.options[group_select_dom.selectedIndex].value
+			const group_id = group_select_dom.options[group_select_dom.selectedIndex].value
 			console.log("Group ID = " + group_id)
-			var add_group_url = user_remove_api_url + e.target.value + "/change/addgroup/?group_id=" + group_id
 
-			fetch(add_group_url)
-			fetch(edit_username_api_url + new_username)
-			.then(res => res.json())
-			.then(
-				(result) => {
-					this.get_users();
-					if (result.error)
-						alert(result.error)
-					else
-						console.log(result.detail)
-				}
-			)
+			usersService.updateUserGroup(e.target.value, group_id)
+				.then((result_group) => {
+					usersService.updateUserUsername(e.target.value, new_username)
+                                		.then((result_username) => {
+                                        		this.get_users();
+							if (result_group.data.detail)
+								console.log(result_group.data.detail)
+							if (result_group.data.error)
+								alert(result_group.data.error)
+							if (result_username.data.detail)
+								console.log(result_username.data.detail)
+							if (result_username.data.error)
+								alert(result_username.data.error)
+                                		});
+				});
 		}else{
 		this.setState({
 			user_id_edit: "" + e.target.value
@@ -354,20 +343,17 @@ class UsersTable extends React.Component {
 	handleClickAddUser(e) {
                 const username_input_dom = document.querySelector('#addUserUsername');
                 const group_select_dom = document.querySelector('#groupSelect');
-                var username = username_input_dom.value + "";
-                var group_id = group_select_dom.options[group_select_dom.selectedIndex].value
-                var add_user_url = `${user_remove_api_url}create/${username}/${default_user_password}/?group=${group_id}`
-                fetch(add_user_url)
-                        .then(res => res.json())
-                        .then(
-                                (result) => {
-					this.get_users();
-                                        if (result.error)
-                                                alert(result.error)
-                                        else
-                                                console.log(result.detail)
-                                }
-                        )
+                const username = username_input_dom.value + "";
+                const group_id = group_select_dom.options[group_select_dom.selectedIndex].value
+
+		usersService.createUser(username, default_user_password, group_id)
+			.then((result) => {
+				this.get_users();
+				if (result.data.error)
+                                	alert(result.data.error)
+                                else
+                                        console.log(result.data.detail)
+				});
         }
 }
 
@@ -384,16 +370,13 @@ class GroupsTable extends React.Component {
 	}
 
         get_groups(){
-        fetch(groups_api_url)
-            .then(res => res.json())
-                .then(
-                        (result)=> {
-                                this.setState({
-                                        groups: result,
-					group_id_edit: "none",
+		groupsService.getGroups()
+			.then((result) => {
+				this.setState({
+                                        groups: result.data,
+                                        group_id_edit: "none",
                                 });
-			}
-                )
+			});
         }
 
         componentDidMount() {
@@ -555,61 +538,52 @@ class GroupsTable extends React.Component {
 	handleClickAddGroup(e) {
 		var add_group_name = document.querySelector("#newGroupName").value
 		var add_group_desc = document.querySelector("#newGroupDesc").value
-		var add_new_group_url = groups_api_url + "create/" + add_group_name + "/?desc=" + add_group_desc;
-		fetch(add_new_group_url)
-			.then(res => res.json())
-			.then(
-				(result) => {
-					this.get_groups();
-					if (result.error)
-						alert(result.error)
-					else
-						console.log(result.detail)
-				}
-			)
+
+		groupsService.createGroup(add_group_name, add_group_desc)
+			.then((result) => {
+				this.get_groups();
+                                        if (result.data.error)
+                                                alert(result.data.error)
+                                        else
+                                                console.log(result.data.detail)
+			});
 	}
 	
 	handleClickDelete(e) {
 		var group_id = e.target.value
-		var group_remove_url = groups_api_url + group_id + "/remove/"
-		fetch(group_remove_url)
-			.then(res => res.json())
-			.then(
-				(result) => {
-					this.get_groups();
-					if (result.error)
-						alert(result.error)
-					else
-						console.log(result.detail)
-				}
-			)
-	}
+		groupsService.removeGroup(group_id)
+			.then((result) => {
+				this.get_groups();
+                                        if (result.data.error)
+                                                alert(result.data.error)
+                                        else
+                                                console.log(result.data.detail)
+			});
+		}
 	
 	handleClickEdit(e) {
                 if (("" + e.target.value) === "" + (this.state.group_id_edit)){
-                        var edit_name_api_url = groups_api_url + e.target.value + "/change/groupname/"
-			var edit_desc_api_url = groups_api_url + e.target.value + "/change/groupdesc/"
-                        var new_name = document.querySelector("#inputname" + e.target.value).value
-			var new_desc = document.querySelector("#inputdesc" + e.target.value).value
-                        fetch(edit_name_api_url + new_name + "/")
-                        .then(res => res.json())
-                        .then(
-                                (result) => {
-					var name_edit_result = result
-					fetch(edit_desc_api_url + new_desc + "/")
-						.then(res => res.json())
-						.then(
-							(result) => {
-								this.get_groups();
-                                        		if (name_edit_result.error)
-                                                		alert(name_edit_result.error);
-                                        		else
-                                                		console.log(name_edit_result.detail);
+                        const group_name = document.querySelector("#inputname" + e.target.value).value
+			const group_desc = document.querySelector("#inputdesc" + e.target.value).value
 
-							}
-						)
-                                }
-                        )
+                       	groupsService.updateGroupDesc(e.target.value, group_desc)
+                                .then((result_desc) => {
+                                        groupsService.updateGroupName(e.target.value, group_name)
+                                                .then((result_name) => {
+							console.log(result_desc)
+                                                        this.get_groups();
+                                                        if (result_desc.data.error)
+                                                                alert(result_desc.data.error);
+                                                        else
+                                                                console.log(result_desc.data.detail);
+
+                                                        if (result_name.data.error)
+                                                                alert(result_name.data.error);
+                                                        else
+                                                                console.log(result_name.data.detail);
+                                                });
+                                });
+ 
                 }else{
                 this.setState({
                         group_id_edit: "" + e.target.value
