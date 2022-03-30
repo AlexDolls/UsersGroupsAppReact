@@ -308,7 +308,6 @@ class UsersTable extends React.Component {
 		usersService.removeUser(e.target.value)
 			.then((result) => {
 				this.get_users();
-                                console.log(result.data.detail)
 			});
 	}
 
@@ -316,12 +315,12 @@ class UsersTable extends React.Component {
 		if (("" + e.target.value) === "" + (this.state.user_id_edit)){
 			const new_username = document.querySelector("#input" + e.target.value).value
 			const group_select_dom = document.querySelector('#editselectgroup' + e.target.value);
-			const group_id = group_select_dom.options[group_select_dom.selectedIndex].value
-			console.log("Group ID = " + group_id)
+			const group_id = group_select_dom.options[group_select_dom.selectedIndex].value;
+			const user_id = e.target.value;
 
-			usersService.updateUserGroup(e.target.value, group_id)
+			usersService.updateUserGroup(user_id, group_id)
 				.then((result_group) => {
-					usersService.updateUserUsername(e.target.value, new_username)
+					usersService.updateUserUsername(user_id, new_username)
                                 		.then((result_username) => {
                                         		this.get_users();
 							if (result_group.data.detail)
@@ -565,12 +564,12 @@ class GroupsTable extends React.Component {
                 if (("" + e.target.value) === "" + (this.state.group_id_edit)){
                         const group_name = document.querySelector("#inputname" + e.target.value).value
 			const group_desc = document.querySelector("#inputdesc" + e.target.value).value
+			const group_id = e.target.value;
 
-                       	groupsService.updateGroupDesc(e.target.value, group_desc)
+                       	groupsService.updateGroupDesc(group_id, group_desc)
                                 .then((result_desc) => {
-                                        groupsService.updateGroupName(e.target.value, group_name)
+                                        groupsService.updateGroupName(group_id, group_name)
                                                 .then((result_name) => {
-							console.log(result_desc)
                                                         this.get_groups();
                                                         if (result_desc.data.error)
                                                                 alert(result_desc.data.error);
