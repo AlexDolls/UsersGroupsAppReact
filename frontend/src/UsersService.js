@@ -9,21 +9,30 @@ export default class UserssService{
                 const url = `${API_URL}/api/users/`;
                 return axios.get(url);
         }
-	updateUserUsername(customer_id, username){
-		const url = `${API_URL}/api/users/${customer_id}/change/username/?username=${username}`;
-		return axios.get(url);
+	updateUserUsername(user_id, username){
+		const url = `${API_URL}/api/users/${user_id}/change/username/`;
+		return axios.put(url, {
+			"username":username
+		});
 	}
-	updateUserGroup(customer_id, group_id){
-		const url = `${API_URL}/api/users/${customer_id}/change/addgroup/?group_id=${group_id}`;
-		return axios.get(url);
+	updateUserGroup(user_id, group_id){
+		const url = `${API_URL}/api/users/${user_id}/change/addgroup/`;
+		return axios.put(url, {
+			"group_id": group_id
+		});
 	}
 	createUser(username, password, group_id){
-                const url = `${API_URL}/api/users/create/${username}/${password}/?group_id=${group_id}`;
-                return axios.get(url);
+                const url = `${API_URL}/api/users/create/`;
+		const body = {
+			"username": username,
+			"password": password,
+			"group_id": group_id
+		}
+                return axios.post(url, body);
         }
 	removeUser(user_id){
                 const url = `${API_URL}/api/users/${user_id}/remove/`;
-                return axios.get(url);
+                return axios.delete(url);
         }
 }
 
@@ -35,24 +44,28 @@ export class GroupsService{
                 return axios.get(url);
         }
 	createGroup(group_name, group_desc){
-		if (group_desc === "")
-			group_desc = " "
-		const url = `${API_URL}/api/groups/create/${group_name}/${group_desc}/`
-		return axios.get(url);
+		const url = `${API_URL}/api/groups/create/`
+		var body = {
+			"group_name": group_name,
+			"group_desc": group_desc
+		}
+		return axios.post(url, body);
 	}
 	removeGroup(group_id){
                 const url = `${API_URL}/api/groups/${group_id}/remove/`
-                return axios.get(url);
+                return axios.delete(url);
         }
 	updateGroupDesc(group_id, group_desc) {
-		if (group_desc === "")  
-                        group_desc = " "
-		const url = `${API_URL}/api/groups/${group_id}/change/groupdesc/${group_desc}/`
-                return axios.get(url);
+		const url = `${API_URL}/api/groups/${group_id}/change/groupdesc/`
+                return axios.put(url, {
+			"group_desc": group_desc
+		});
 	}
 	updateGroupName(group_id, group_name) {
-                const url = `${API_URL}/api/groups/${group_id}/change/groupname/${group_name}/`
-                return axios.get(url);
+                const url = `${API_URL}/api/groups/${group_id}/change/groupname/`
+                return axios.put(url, {
+			"group_name": group_name
+		});
         }
 
 }

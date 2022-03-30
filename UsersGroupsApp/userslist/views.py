@@ -167,34 +167,41 @@ def get_user(request, user_id: int):
     user_json_info = UserActions.get_user_json(user)
     return Response(user_json_info)
 
-@api_view(['GET'])
-def create_user(request, username: int, password: str):
-    email = request.GET.get("email", "sample@mail.com")
-    group = request.GET.get("group_id", "null")
+@api_view(['POST'])
+def create_user(request):
+    username = request.data.get("username", "")
+    password = request.data.get("password", "")
+    if not username or not password:
+        return Response({"error":"Wrong data. Username must be given!"})
+    email = request.data.get("email", "sample@mail.com")
+    group = request.data.get("group_id", "null")
     user = UserActions.create_user(username=username, password=password, email=email, group=group)
     return Response(user)
 
-@api_view(['GET'])
+@api_view(['DELETE'])
 def remove_user(request, user_id: int):
     user_remove = UserActions.remove_user(user_id=user_id)
     return Response(user_remove)
 
-@api_view(['GET'])
-def change_password(request, user_id: int, new_password: str):
-    user_change_password = UserActions.change_password(password=new_password, user_id=user_id)
+@api_view(['PUT'])
+def change_password(request, user_id: int):
+    password = request.data.get("password", "")
+    if not password:
+        return Response({"error":"Password should be given!"})
+    user_change_password = UserActions.change_password(password=password, user_id=user_id)
     return Response(user_change_password)
 
-@api_view(['GET'])
+@api_view(['PUT'])
 def change_username(request, user_id: int):
-    new_username = request.GET.get("username", "")
-    if not new_username:
+    username = request.data.get("username", "")
+    if not username:
         return Response({"error":"No username was given!"})
-    user_change_username = UserActions.change_username(username=new_username, user_id=user_id)
+    user_change_username = UserActions.change_username(username=username, user_id=user_id)
     return Response(user_change_username)
 
-@api_view(['GET'])
+@api_view(['PUT'])
 def change_group(request, user_id: int):
-    group_id = request.GET.get("group_id", None)
+    group_id = request.data.get("group_id", None)
     if group_id == "":
         group_id = None
     user_change_group = UserActions.change_group(user_id=user_id, group_id=group_id)
@@ -215,23 +222,31 @@ def get_group(request, group_id: int):
     group_json_info = GroupActions.get_group_json(group)
     return Response(group_json_info)
 
-@api_view(['GET'])
-def create_group(request, group_name: str, desc: str):
-    group = GroupActions.create_group(name=group_name, desc=desc)
+@api_view(['POST'])
+def create_group(request):
+    group_name = request.data.get("group_name", "")
+    group_desc = request.data.get("group_desc", "")
+    if not group_name:
+        return Response({"error":"Group name can't be empty!"})
+    group = GroupActions.create_group(name=group_name, desc=group_desc)
     return Response(group)
 
-@api_view(['GET'])
+@api_view(['DELETE'])
 def remove_group(request, group_id: int):
     group_remove = GroupActions.remove_group(group_id=group_id)
     return Response(group_remove)
 
-@api_view(['GET'])
-def change_group_name(request, group_id: int, new_group_name: str):
+@api_view(['PUT'])
+def change_group_name(request, group_id: int):
+    new_group_name = request.data.get("group_name", "")
+    if not new_group_name:
+        return Response({"error":"Group name can't be empty!"})
     group_change_name = GroupActions.change_group_name(name=new_group_name, group_id=group_id)
     return Response(group_change_name)
 
-@api_view(['GET'])
-def change_group_desc(request, group_id: int, new_group_desc: str):
+@api_view(['PUT'])
+def change_group_desc(request, group_id: int):
+    new_group_desc = request.data.get("group_desc", "")
     group_change_desc = GroupActions.change_group_desc(desc=new_group_desc, group_id=group_id)
     return Response(group_change_desc)
 
