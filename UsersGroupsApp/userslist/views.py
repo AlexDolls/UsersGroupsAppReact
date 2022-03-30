@@ -249,9 +249,3 @@ def change_group_desc(request, group_id: int):
     new_group_desc = request.data.get("group_desc", "")
     group_change_desc = GroupActions.change_group_desc(desc=new_group_desc, group_id=group_id)
     return Response(group_change_desc)
-
-"""
-Render views
-"""
-def index(request):
-    return render(request, "userslist/index.html")
