@@ -8,7 +8,7 @@ Build the images and run the containers:
 
 $ docker-compose up -d --build
 
-##### It's better to be in root dir UsersGroups/
+##### It's better to be in dir UsersGroupsAppReact/
 
 Test it out at http://localhost:3000
 
